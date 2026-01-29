@@ -1,7 +1,7 @@
 {block name="inner_body"}
 	<form method="post">
 		<input type="hidden" name="D[ACTION]" value='save'>
-		<button type="button" onclick="window.open('?D[_PAGE]=admin__page.edit&R[ModulId]=papp/page&D[PAGE][D][{hash("crc32b", time())}][Active]=1','_self');" class="btn btn-primary btn-sm">Neu</button>
+		<button type="button" onclick="window.open('?R[Page]=admin__page.edit&R[ModulId]=papp/page&D[PAGE][D][{hash("crc32b", time())}][Active]=1','_self');" class="btn btn-primary btn-sm">Neu</button>
 	<table class="table">
 		<thead>
 			<tr>
@@ -19,7 +19,7 @@
 				<td scope="row">{input p=['name'=>"D[PAGE][D][{$kPAG}][Active]", 'value'=>$PAG.Active, 'type' => 'checkbox']}</td>
 				<td scope="row">{input p=['name'=>"D[PAGE][D][{$kPAG}][Follow]", 'value'=>$PAG.Follow, 'type' => 'checkbox']}</td>
 				<td>{$PAG.LANGUAGE.D['DE'].Title}</td>
-				<td><button type="button" onclick="window.open('?D[_PAGE]=admin__page.edit&R[ModuleId]=papp/page&D[_ID]={$kPAG}','_self');" class="btn btn-primary btn-sm">Edit</button></td>
+				<td><button type="button" onclick="window.open('?R[Page]=admin__page.edit&R[ModuleId]=papp/page&D[_ID]={$kPAG}','_self');" class="btn btn-primary btn-sm">Edit</button></td>
 			</tr>
 		{/foreach}
 		</tbody>

@@ -12,7 +12,7 @@ if(($D['ACTION']??null) == 'save') {
 				$D['LINK']['D'][$hURL] = [
 					'Active'	=> 1,
 					'FromURL'	=> $LAN['FromURL'],
-					'ToURL'		=> "D[_PAGE]=page&D[_ID]={$kPAG}&D[_LANGUAGE]={$kLAN}",
+					'ToURL'		=> "R[Page]=frontend__page&R[ModuleId]=papp/page&R[Id]={$kPAG}&R[LanguageId]={$kLAN}",
 				];
 				$D['PAGE']['D'][$kPAG]['LANGUAGE']['D'][$kLAN]['LINK'] = $hURL;
 				$D['PAGE']['D'][$kPAG]['LANGUAGE']['D'][$kLAN]['Text'] = str_replace('-textarea>','textarea>',$D['PAGE']['D'][$kPAG]['LANGUAGE']['D'][$kLAN]['Text']);
@@ -31,14 +31,16 @@ if(($D['ACTION']??null) == 'save') {
 	$C['CData']->set_object($D); 
 }
 
-$F['PAGE']['W'][0]['ID'] = [$D['_ID']];
+$F['PAGE']['W'][0]['ID'] = [($R['Id']??null)];
 $F['PAGE']['LANGUAGE'] = [];
 
 $C['CData']->get_object($D,$F);
 
 unset($F['PAGE']);
 
-foreach((array)$D['PAGE']['D'][ $D['_ID'] ]['LANGUAGE']['D'] AS $kLAN => $LAN) {
-	$F['LINK']['W'][0]['ID'][] = $LAN['LINK'];
+if($R['Id']??null) {
+	foreach((array)$D['PAGE']['D'][ $R['Id'] ]['LANGUAGE']['D'] AS $kLAN => $LAN) {
+		$F['LINK']['W'][0]['ID'][] = $LAN['LINK'];
+	}
 }
-#$F['LINK'] = [];
+

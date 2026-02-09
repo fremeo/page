@@ -2,10 +2,54 @@
 
 if(($D['ACTION']??null) == 'save') {
 
+#Link erstellen oder aktuallisieren
+	foreach((array)$D['PAGE']['D'] AS $kPAG => $PAG) {
+		foreach((array)$PAG['LANGUAGE']['D'] AS $kLAN => $LAN) {
+			$_delLink[] = $LAN['LINK'];
+
+			if($LAN['Active'] != -2 && $PAG != -2) {
+
+				$_newLink["{$kPAG}-{$kLAN}"] = [
+					'Page' => 'frontend__page',
+					'ModuleId' => 'papp/page',
+					'Param' => "R[Id]={$kPAG}&R[LanguageId]={$kLAN}",
+					'SeoURL' => $LAN['FromURL'],
+				];
+
+
+				$D['PAGE']['D'][$kPAG]['LANGUAGE']['D'][$kLAN]['Text'] = str_replace('-textarea>','textarea>',$D['PAGE']['D'][$kPAG]['LANGUAGE']['D'][$kLAN]['Text']);
+			} else { #WennGelöscht werden soll, soll dann dazu gehörige Link entfernt werden
+				$D['PAGE']['D'][$kPAG]['LANGUAGE']['D'][$kLAN]['Active'] = -2;
+				if($PAG == -2) {
+					$D['PAGE']['D'][$kPAG]['Active'] = -2;
+				}
+			}
+		}
+	}
+
+	if($_delLink) {
+		$C['papp_phpapp']['Link']->deleteById($_delLink);
+
+		if($_newLink) {
+				$ret = $C['papp_phpapp']['Link']->create($_newLink);
+
+
+				foreach((array)$D['PAGE']['D'] AS $kPAG => $PAG) {
+					foreach((array)$PAG['LANGUAGE']['D'] AS $kLAN => $LAN) {
+						if(isset($ret["{$kPAG}-{$kLAN}"])) {
+							$D['PAGE']['D'][$kPAG]['LANGUAGE']['D'][$kLAN]['LINK'] = $ret["{$kPAG}-{$kLAN}"]['LinkId'];
+
+						}
+					}
+				}
+		}
+	}
+/*
 	#erstelle neues SEO Link weiterleitung und lösche alte und weise die Link-ID der Seite neu zu.
 	foreach((array)$D['PAGE']['D'] AS $kPAG => $PAG) {
 		foreach((array)$PAG['LANGUAGE']['D'] AS $kLAN => $LAN) {
 
+			
 			$D['LINK']['D'][ $LAN['LINK'] ]['Active'] = -2; #Alte URL löschen
 			if($LAN['Active'] != -2 && $PAG != -2) {
 				$hURL = hash("crc32b", $LAN['FromURL']);
@@ -27,7 +71,7 @@ if(($D['ACTION']??null) == 'save') {
 			}
 		}
 	}
-
+*/
 	$C['CData']->set_object($D); 
 }
 

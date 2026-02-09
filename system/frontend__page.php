@@ -12,7 +12,11 @@ if($R['Id']??null) {
 	unset($F['PAGE']);#ToDo: get_object aus index entfernen, dann kann diese Zeile entfernt werden.
 
 	$C['Smarty']->assign('D',$D);
-	$D['PAGE']['D'][ $R['Id'] ]['LANGUAGE']['D'][ 'DE' ]['Text'] = $C['Smarty']->fetch('string:'.$D['PAGE']['D'][ $R['Id'] ]['LANGUAGE']['D'][ 'DE' ]['Text']);
+	if(isset($D['PAGE']['D'][ $R['Id'] ])) {
+		$D['PAGE']['D'][ $R['Id'] ]['LANGUAGE']['D'][ 'DE' ]['Text'] = $C['Smarty']->fetch('string:'.$D['PAGE']['D'][ $R['Id'] ]['LANGUAGE']['D'][ 'DE' ]['Text']);
+	} else {
+		header("HTTP/1.1 404 Not Found");
+	}
 } else {
 	header("HTTP/1.1 404 Not Found");
 	#header("?R[Page]=error.404&R[MuduleId]=papp/phpapp");

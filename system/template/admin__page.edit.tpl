@@ -39,6 +39,4 @@
 			<button type="submit" class="btn btn-primary btn-sm">Save</button>
 		</form>
 	
-
-	{*print_r($PLA.LINK)*}
 {/block}

@@ -72,13 +72,13 @@ if(($D['ACTION']??null) == 'save') {
 		}
 	}
 */
-	$C['CData']->set_object($D); 
+	$C['papp~page']['CData']->set_object($D); 
 }
 
 $F['PAGE']['W'][0]['ID'] = [($R['Id']??null)];
 $F['PAGE']['LANGUAGE'] = [];
 
-$C['CData']->get_object($D,$F);
+$C['papp~page']['CData']->get_object($D,$F);
 
 unset($F['PAGE']);
 

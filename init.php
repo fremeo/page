@@ -1,15 +1,8 @@
 <?php
 
 
-#Seo Link Registrierung
-/*
-$D['LINK']['D'][ hash("crc32b", 'admin/link.list.html') ] = [
-	'FromURL' => "admin/link.list.html",
-	'ToURL' => "D[_PAGE]=admin__link.list&R[ModulId]=papp/framework",
-	'Active' => 1,
-];
-*/
 #DB-----------------
+
 $Pattern = [];
 $Pattern['PAGE'] = [
 	'Active'		=> ['Type' => 'checkbox'],
@@ -22,4 +15,14 @@ $Pattern['PAGE']['D']['LANGUAGE'] = [
 	'LINK'			=> ['Type' => 'id'], #ID für LINK je Sprache
 ];
 
-$C['CData']->registerPattern($Pattern);
+##$C['CData']->registerPattern($Pattern);
+
+
+$C['papp~page']['CData'] = new \papp\CData( [ 'DB' => ['FILENAME' => PROJECT_ROOT.'data/papp~page/data.db', 'FILENAME_C' => PROJECT_ROOT.'data_c/papp~page/data.db' ] ] );
+$C['papp~page']['CData']->registerPattern($Pattern);
+
+/*
+$F['PAGE']['LANGUAGE'] = [];
+$C['CData']->get_object($D1,$F);
+$C['papp~page']['CData']->set_object($D1);
+*/

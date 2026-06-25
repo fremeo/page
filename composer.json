@@ -1,5 +1,5 @@
 {
-    "name": "papp/page",
+    "name": "fremeo/page",
     "description": "Page",
     "license": "proprietary",
     "type": "phpapp-module",
@@ -11,6 +11,6 @@
     },
     "prefer-stable": true,
 	"psr-4": {
-        "papp\\": "system/papp/"
+        "papp\\": "system/fremeo/"
     }
 }

@@ -6,8 +6,8 @@
     "keywords": ["phpapp", "phpapp-module", "page"],
     "require": {
         "php": "^8.0",
-        "smarty/smarty": "^v4.5",
-		"papp/cdata": "^v2.12"
+        "phploader/smartylite": "^v4.5",
+		"phploader/cdata": "^v2.12"
     },
     "prefer-stable": true,
 	"psr-4": {

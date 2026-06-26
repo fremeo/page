@@ -11,7 +11,7 @@ if(($D['ACTION']??null) == 'save') {
 
 				$_newLink["{$kPAG}-{$kLAN}"] = [
 					'Page' => 'frontend__page',
-					'ModuleId' => 'papp/page',
+					'ModuleId' => 'fremeo/page',
 					'Param' => "R[Id]={$kPAG}&R[LanguageId]={$kLAN}",
 					'SeoURL' => $LAN['FromURL'],
 				];
@@ -28,10 +28,10 @@ if(($D['ACTION']??null) == 'save') {
 	}
 
 	if($_delLink) {
-		$C['papp~phpapp']['Link']->deleteById($_delLink);
+		$C['fremeo~core']['Link']->deleteById($_delLink);
 
 		if($_newLink) {
-				$ret = $C['papp~phpapp']['Link']->create($_newLink);
+				$ret = $C['fremeo~core']['Link']->create($_newLink);
 
 
 				foreach((array)$D['PAGE']['D'] AS $kPAG => $PAG) {
@@ -56,7 +56,7 @@ if(($D['ACTION']??null) == 'save') {
 				$D['LINK']['D'][$hURL] = [
 					'Active'	=> 1,
 					'FromURL'	=> $LAN['FromURL'],
-					'ToURL'		=> "R[Page]=frontend__page&R[ModuleId]=papp/page&R[Id]={$kPAG}&R[LanguageId]={$kLAN}",
+					'ToURL'		=> "R[Page]=frontend__page&R[ModuleId]=fremeo/page&R[Id]={$kPAG}&R[LanguageId]={$kLAN}",
 				];
 				$D['PAGE']['D'][$kPAG]['LANGUAGE']['D'][$kLAN]['LINK'] = $hURL;
 				$D['PAGE']['D'][$kPAG]['LANGUAGE']['D'][$kLAN]['Text'] = str_replace('-textarea>','textarea>',$D['PAGE']['D'][$kPAG]['LANGUAGE']['D'][$kLAN]['Text']);
@@ -72,13 +72,13 @@ if(($D['ACTION']??null) == 'save') {
 		}
 	}
 */
-	$C['papp~page']['CData']->set_object($D); 
+	$C['fremeo~page']['CData']->set_object($D); 
 }
 
 $F['PAGE']['W'][0]['ID'] = [($R['Id']??null)];
 $F['PAGE']['LANGUAGE'] = [];
 
-$C['papp~page']['CData']->get_object($D,$F);
+$C['fremeo~page']['CData']->get_object($D,$F);
 
 unset($F['PAGE']);
 

@@ -2,15 +2,15 @@
     "name": "fremeo/page",
     "description": "Page",
     "license": "proprietary",
-    "type": "phpapp-module",
-    "keywords": ["phpapp", "phpapp-module", "page"],
+    "type": "fremeo-module",
+    "keywords": ["fremeo", "fremeo-module", "page"],
     "require": {
         "php": "^8.0",
-        "smarty/smarty": "^v4.5",
-		"papp/cdata": "^v2.12"
+        "phploader/smartylite": "^v4.5",
+		"phploader/cdata": "^v2.12"
     },
     "prefer-stable": true,
 	"psr-4": {
-        "papp\\": "system/fremeo/"
+        "fremeo\\": "system/fremeo/"
     }
 }

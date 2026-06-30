@@ -8,7 +8,7 @@ if($R['Id']??null) {
 	$F['PAGE']['LANGUAGE']['W'][0]['ID'] = 'DE'; #Todo: Sprache Übergabe
 
 
-	$C['fremeo~page']['CData']->get_object($D,$F);
+	$C['fremeo/page']['CData']->get_object($D,$F);
 	unset($F['PAGE']);#ToDo: get_object aus index entfernen, dann kann diese Zeile entfernt werden.
 
 	$C['Smarty']->assign('D',$D);

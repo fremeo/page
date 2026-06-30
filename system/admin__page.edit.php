@@ -28,10 +28,10 @@ if(($D['ACTION']??null) == 'save') {
 	}
 
 	if($_delLink) {
-		$C['fremeo~core']['Link']->deleteById($_delLink);
+		$C['fremeo/core']['Link']->deleteById($_delLink);
 
 		if($_newLink) {
-				$ret = $C['fremeo~core']['Link']->create($_newLink);
+				$ret = $C['fremeo/core']['Link']->create($_newLink);
 
 
 				foreach((array)$D['PAGE']['D'] AS $kPAG => $PAG) {
@@ -72,13 +72,13 @@ if(($D['ACTION']??null) == 'save') {
 		}
 	}
 */
-	$C['fremeo~page']['CData']->set_object($D); 
+	$C['fremeo/page']['CData']->set_object($D); 
 }
 
 $F['PAGE']['W'][0]['ID'] = [($R['Id']??null)];
 $F['PAGE']['LANGUAGE'] = [];
 
-$C['fremeo~page']['CData']->get_object($D,$F);
+$C['fremeo/page']['CData']->get_object($D,$F);
 
 unset($F['PAGE']);
 

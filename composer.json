@@ -6,8 +6,7 @@
     "keywords": ["fremeo", "fremeo-module", "page"],
     "require": {
         "php": "^8.0",
-        "phploader/smartylite": "^v4.5",
-		"phploader/cdata": "^v2.12"
+        "fremeo/core": "^v0.0"
     },
     "prefer-stable": true,
 	"psr-4": {

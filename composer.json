@@ -10,6 +10,6 @@
     },
     "prefer-stable": true,
 	"psr-4": {
-        "fremeo\\": "system/fremeo/"
+        "fremeo\\page\\": "system/fremeo/"
     }
 }

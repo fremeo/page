@@ -2,7 +2,7 @@
     "name": "fremeo/page",
     "description": "Page",
     "license": "proprietary",
-    "type": "fremeo-module",
+    "type": "module",
     "keywords": ["fremeo", "fremeo-module", "page"],
     "require": {
         "php": "^8.0",

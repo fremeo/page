@@ -79,5 +79,5 @@ foreach((array)($D['PAGE']['D'] ?? []) AS $kPAG => $PAG) {
 		$E['SEO'][$kPAG][$kLAN] = $links[$LAN['LINK'] ?? '']['FromURL'] ?? '';
 	}
 }
-$D['PAGE_EDIT'] = $E;
+$R['PageEdit'] = $E; // Hilfswerte fürs Template ($D.R.PageEdit), $D enthält nur die Datenbankstruktur
 

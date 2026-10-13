@@ -1,5 +1,5 @@
 {block name="inner_body"}
-		{foreach $D.PAGE_EDIT.Info as $info}<div class="alert alert-warning">{$info|escape}</div>{/foreach}
+		{foreach $D.R.PageEdit.Info as $info}<div class="alert alert-warning">{$info|escape}</div>{/foreach}
 		<form method="post">
 		<input type="hidden" name="D[ACTION]" value='save'>
 			<table class="table">
@@ -22,7 +22,7 @@
 					</tr>
 					<tr>
 						<td>SEO-URL:</td>
-						<td>{input p=['name'=>"D[PAGE][D][{$kPAG}][LANGUAGE][D][DE][FromURL]", 'value'=>$D.PAGE_EDIT.SEO[$kPAG]['DE'] ]} <small class="text-muted">Leer lassen = automatisch aus dem Titel.</small>
+						<td>{input p=['name'=>"D[PAGE][D][{$kPAG}][LANGUAGE][D][DE][FromURL]", 'value'=>$D.R.PageEdit.SEO[$kPAG]['DE'] ]} <small class="text-muted">Leer lassen = automatisch aus dem Titel.</small>
 							{input p=['name'=>"D[PAGE][D][{$kPAG}][LANGUAGE][D][DE][LINK]", 'value'=>$PAG.LANGUAGE.D['DE'].LINK, 'type' => 'hidden' ]}
 						</td>
 					</tr>

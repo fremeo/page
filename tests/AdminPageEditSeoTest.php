@@ -60,6 +60,7 @@ class AdminPageEditSeoTest extends TestCase {
 		$D = ['ACTION' => $lang === null ? null : 'save'];
 		if ($lang !== null) $D['PAGE']['D']['p1'] = $page + ['LANGUAGE' => ['D' => ['DE' => $lang]]];
 		$R = ['Id' => 'p1'];
+		$D['R'] = &$R; // wie im Core: $D['R'] verweist auf $R
 		(function () use (&$C, &$D, &$R) {
 			include __DIR__ . '/../system/admin__page.edit.php';
 		})();
@@ -79,7 +80,7 @@ class AdminPageEditSeoTest extends TestCase {
 	public function testTitleBecomesSeoUrlWhenFieldIsEmpty(): void {
 		$D = $this->savePage(['Active' => 1, 'Title' => 'Über uns & mehr', 'FromURL' => '']);
 
-		$this->assertSame('uber_uns_mehr', $D['PAGE_EDIT']['SEO']['p1']['DE']);
+		$this->assertSame('uber_uns_mehr', $D['R']['PageEdit']['SEO']['p1']['DE']);
 		$this->assertSame($this->id('uber_uns_mehr'), $D['PAGE']['D']['p1']['LANGUAGE']['D']['DE']['LINK']);
 		$this->assertSame([$this->id('uber_uns_mehr')], $this->linkIds($this->db));
 	}
@@ -87,7 +88,7 @@ class AdminPageEditSeoTest extends TestCase {
 	public function testGivenSeoUrlIsNormalized(): void {
 		$D = $this->savePage(['Active' => 1, 'Title' => 'Egal', 'FromURL' => 'Mein Impressum']);
 
-		$this->assertSame('mein_impressum', $D['PAGE_EDIT']['SEO']['p1']['DE']);
+		$this->assertSame('mein_impressum', $D['R']['PageEdit']['SEO']['p1']['DE']);
 	}
 
 	public function testSeoUrlTakenInOtherModuleGetsSuffix(): void {
@@ -97,8 +98,8 @@ class AdminPageEditSeoTest extends TestCase {
 
 		$D = $this->savePage(['Active' => 1, 'Title' => 'Team', 'FromURL' => '']);
 
-		$this->assertSame('team_1', $D['PAGE_EDIT']['SEO']['p1']['DE']);
-		$this->assertNotEmpty($D['PAGE_EDIT']['Info']);
+		$this->assertSame('team_1', $D['R']['PageEdit']['SEO']['p1']['DE']);
+		$this->assertNotEmpty($D['R']['PageEdit']['Info']);
 	}
 
 	public function testExistingLinkIsKeptWhenFieldIsEmptyAndTitleChanges(): void {
@@ -108,7 +109,7 @@ class AdminPageEditSeoTest extends TestCase {
 		// wie im Formular: LINK wird nicht mitgesendet (unverändertes Feld), FromURL leer
 		$D = $this->savePage(['Active' => 1, 'Title' => 'Neuer Titel', 'FromURL' => '']);
 
-		$this->assertSame('erster_titel', $D['PAGE_EDIT']['SEO']['p1']['DE']);
+		$this->assertSame('erster_titel', $D['R']['PageEdit']['SEO']['p1']['DE']);
 		$this->assertSame([$linkId], $this->linkIds($this->db));
 	}
 
@@ -120,7 +121,7 @@ class AdminPageEditSeoTest extends TestCase {
 		$D = $this->savePage(['Active' => 1]);
 		$D = $this->savePage(['Active' => 1]);
 
-		$this->assertSame('behalt', $D['PAGE_EDIT']['SEO']['p1']['DE']);
+		$this->assertSame('behalt', $D['R']['PageEdit']['SEO']['p1']['DE']);
 		$this->assertSame($linkId, $D['PAGE']['D']['p1']['LANGUAGE']['D']['DE']['LINK']);
 		$this->assertSame([$linkId], $this->linkIds($this->db));
 	}
@@ -138,12 +139,12 @@ class AdminPageEditSeoTest extends TestCase {
 
 		// nur FromURL geändert, LINK nicht mitgesendet
 		$D = $this->savePage(['Active' => 1, 'FromURL' => 'willkommen']);
-		$this->assertSame('willkommen', $D['PAGE_EDIT']['SEO']['p1']['DE']);
-		$this->assertEmpty($D['PAGE_EDIT']['Info']);
+		$this->assertSame('willkommen', $D['R']['PageEdit']['SEO']['p1']['DE']);
+		$this->assertEmpty($D['R']['PageEdit']['Info']);
 
 		// erneut speichern ohne Änderung: bleibt stehen
 		$D = $this->savePage(['Active' => 1]);
-		$this->assertSame('willkommen', $D['PAGE_EDIT']['SEO']['p1']['DE']);
+		$this->assertSame('willkommen', $D['R']['PageEdit']['SEO']['p1']['DE']);
 		$this->assertSame([$this->id('willkommen')], $this->linkIds($this->db));
 	}
 
@@ -152,7 +153,7 @@ class AdminPageEditSeoTest extends TestCase {
 
 		$D = $this->savePage(['Active' => 1, 'Title' => 'Alt', 'FromURL' => 'neu']);
 
-		$this->assertSame('neu', $D['PAGE_EDIT']['SEO']['p1']['DE']);
+		$this->assertSame('neu', $D['R']['PageEdit']['SEO']['p1']['DE']);
 		$this->assertSame($this->id('neu'), $D['PAGE']['D']['p1']['LANGUAGE']['D']['DE']['LINK']);
 		$this->assertSame([$this->id('neu')], $this->linkIds($this->db));
 	}
@@ -172,7 +173,7 @@ class AdminPageEditSeoTest extends TestCase {
 
 		$D = $this->savePage(['Active' => 1, 'Title' => 'Defekt']);
 
-		$this->assertSame('defekt', $D['PAGE_EDIT']['SEO']['p1']['DE']);
+		$this->assertSame('defekt', $D['R']['PageEdit']['SEO']['p1']['DE']);
 		$this->assertSame($this->id('defekt'), $D['PAGE']['D']['p1']['LANGUAGE']['D']['DE']['LINK']);
 	}
 

@@ -9,7 +9,9 @@
         "fremeo/core": "^v0.0"
     },
     "prefer-stable": true,
-	"psr-4": {
-        "fremeo\\page\\": "system/fremeo/"
+    "autoload": {
+        "psr-4": {
+            "fremeo\\page\\": "system/core/"
+        }
     }
 }

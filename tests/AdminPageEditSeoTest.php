@@ -8,6 +8,7 @@ use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Integrationstest: admin__page.edit.php legt SEO-Links über die Link-Klasse an, benennt sie um und löscht sie.
+ * Die SEO-URL wird nur gespeichert, wenn das Feld FromURL gesendet wird (der Vorschlag aus dem Titel entsteht im Browser).
  * Arbeitet mit temporären Datenbanken (Modul "page" und ein zweites Modul "other" für die modulübergreifende Prüfung).
  */
 class AdminPageEditSeoTest extends TestCase {
@@ -54,12 +55,12 @@ class AdminPageEditSeoTest extends TestCase {
 		(new Filesystem())->remove($this->tmp);
 	}
 
-	/** Führt admin__page.edit.php aus; $lang = Sprachdaten der Seite "p1" (Sprache DE). Gibt $D zurück. */
-	private function savePage(?array $lang, array $page = ['Active' => 1]): array {
+	/** Führt admin__page.edit.php aus; $lang = Sprachdaten der Seite $id (Sprache DE). Gibt $D zurück. */
+	private function savePage(?array $lang, array $page = ['Active' => 1], string $id = 'p1'): array {
 		$C = &$this->C;
 		$D = ['ACTION' => $lang === null ? null : 'save'];
-		if ($lang !== null) $D['PAGE']['D']['p1'] = $page + ['LANGUAGE' => ['D' => ['DE' => $lang]]];
-		$R = ['Id' => 'p1'];
+		if ($lang !== null) $D['PAGE']['D'][$id] = $page + ['LANGUAGE' => ['D' => ['DE' => $lang]]];
+		$R = ['Id' => $id];
 		$D['R'] = &$R; // wie im Core: $D['R'] verweist auf $R
 		(function () use (&$C, &$D, &$R) {
 			include __DIR__ . '/../system/admin__page.edit.php';
@@ -77,108 +78,143 @@ class AdminPageEditSeoTest extends TestCase {
 		return $this->C['Link']->id($seo);
 	}
 
-	public function testTitleBecomesSeoUrlWhenFieldIsEmpty(): void {
-		$D = $this->savePage(['Active' => 1, 'Title' => 'Über uns & mehr', 'FromURL' => '']);
-
-		$this->assertSame('uber_uns_mehr', $D['R']['PageEdit']['SEO']['p1']['DE']);
-		$this->assertSame($this->id('uber_uns_mehr'), $D['PAGE']['D']['p1']['LANGUAGE']['D']['DE']['LINK']);
-		$this->assertSame([$this->id('uber_uns_mehr')], $this->linkIds($this->db));
+	/** SEO-URL der Sprache DE aus $D.LINK.D (wie im Template), null = kein Link. */
+	private function seo(array $D, string $page = 'p1'): ?string {
+		$link = $D['LINK']['D'][$D['PAGE']['D'][$page]['LANGUAGE']['D']['DE']['LINK'] ?? ''] ?? null;
+		return $link === null ? null : (string)($link['FromURL'] ?? '');
 	}
 
-	public function testGivenSeoUrlIsNormalized(): void {
+	private function isHome(array $D, string $page = 'p1'): bool {
+		return $this->seo($D, $page) === '';
+	}
+
+	public function testServerNeverCreatesSeoUrlFromTitle(): void {
+		// Das Formular sendet das unveränderte Feld nicht mit. Der Vorschlag aus dem Titel kommt per JS in das Feld, nicht vom Server.
+		$D = $this->savePage(['Active' => 1, 'Title' => 'Über uns & mehr']);
+
+		$this->assertSame([], $this->linkIds($this->db));
+		$this->assertNull($this->seo($D), 'kein Link');
+		$this->assertSame('Über uns & mehr', $D['PAGE']['D']['p1']['LANGUAGE']['D']['DE']['Title']);
+	}
+
+	public function testSeoUrlSentByBrowserIsSavedNormalized(): void {
 		$D = $this->savePage(['Active' => 1, 'Title' => 'Egal', 'FromURL' => 'Mein Impressum']);
 
-		$this->assertSame('mein_impressum', $D['R']['PageEdit']['SEO']['p1']['DE']);
+		$this->assertSame('mein_impressum', $this->seo($D));
+		$this->assertSame($this->id('mein_impressum'), $D['PAGE']['D']['p1']['LANGUAGE']['D']['DE']['LINK']);
+		$this->assertSame([$this->id('mein_impressum')], $this->linkIds($this->db));
 	}
 
 	public function testSeoUrlTakenInOtherModuleGetsSuffix(): void {
-		$this->C['Link']->createOne('kontakt', 'frontend__other', 'fremeo/other'); // schreibt in $this->db
-		$taken = new Link($this->other);
-		$taken->createOne('team', 'frontend__other', 'fremeo/other');             // nur im anderen Modul
+		(new Link($this->other))->createOne('team', 'frontend__other', 'fremeo/other'); // nur im anderen Modul
 
-		$D = $this->savePage(['Active' => 1, 'Title' => 'Team', 'FromURL' => '']);
+		$D = $this->savePage(['Active' => 1, 'Title' => 'Team', 'FromURL' => 'team']);
 
-		$this->assertSame('team_1', $D['R']['PageEdit']['SEO']['p1']['DE']);
-		$this->assertNotEmpty($D['R']['PageEdit']['Info']);
+		$this->assertSame('team_1', $this->seo($D));
+		$this->assertNotEmpty($D['R']['Info']);
 	}
 
-	public function testExistingLinkIsKeptWhenFieldIsEmptyAndTitleChanges(): void {
-		$this->savePage(['Active' => 1, 'Title' => 'Erster Titel', 'FromURL' => '']);
+	public function testExistingLinkIsKeptWhenFieldIsNotSentAndTitleChanges(): void {
+		$this->savePage(['Active' => 1, 'Title' => 'Erster Titel', 'FromURL' => 'erster_titel']);
 		$linkId = $this->id('erster_titel');
 
-		// wie im Formular: LINK wird nicht mitgesendet (unverändertes Feld), FromURL leer
-		$D = $this->savePage(['Active' => 1, 'Title' => 'Neuer Titel', 'FromURL' => '']);
+		// wie im Formular: LINK und FromURL werden nicht mitgesendet (unveränderte Felder)
+		$D = $this->savePage(['Active' => 1, 'Title' => 'Neuer Titel']);
 
-		$this->assertSame('erster_titel', $D['R']['PageEdit']['SEO']['p1']['DE']);
+		$this->assertSame('erster_titel', $this->seo($D));
 		$this->assertSame([$linkId], $this->linkIds($this->db));
 	}
 
 	public function testSaveWithoutChangesKeepsTheLink(): void {
-		$this->savePage(['Active' => 1, 'Title' => 'Behält', 'FromURL' => '']);
+		$this->savePage(['Active' => 1, 'Title' => 'Behält', 'FromURL' => 'behalt']);
 		$linkId = $this->id('behalt');
 
-		// das Formular sendet unveränderte Felder (LINK, FromURL, Title) nicht mit
 		$D = $this->savePage(['Active' => 1]);
 		$D = $this->savePage(['Active' => 1]);
 
-		$this->assertSame('behalt', $D['R']['PageEdit']['SEO']['p1']['DE']);
+		$this->assertSame('behalt', $this->seo($D));
 		$this->assertSame($linkId, $D['PAGE']['D']['p1']['LANGUAGE']['D']['DE']['LINK']);
 		$this->assertSame([$linkId], $this->linkIds($this->db));
 	}
 
 	public function testSaveWithoutChangesKeepsTheText(): void {
-		$this->savePage(['Active' => 1, 'Title' => 'Mit Text', 'Text' => '<p>Inhalt</p>', 'FromURL' => '']);
+		$this->savePage(['Active' => 1, 'Title' => 'Mit Text', 'Text' => '<p>Inhalt</p>']);
 
 		$D = $this->savePage(['Active' => 1]);
 
 		$this->assertSame('<p>Inhalt</p>', $D['PAGE']['D']['p1']['LANGUAGE']['D']['DE']['Text']);
 	}
 
-	public function testSettingOwnSeoUrlRenamesWithoutSuffix(): void {
-		$this->savePage(['Active' => 1, 'Title' => 'Start', 'FromURL' => '']);
+	public function testChangedSeoUrlRenamesTheLinkWithoutSuffix(): void {
+		$this->savePage(['Active' => 1, 'Title' => 'Alt', 'FromURL' => 'alt']);
 
-		// nur FromURL geändert, LINK nicht mitgesendet
-		$D = $this->savePage(['Active' => 1, 'FromURL' => 'willkommen']);
-		$this->assertSame('willkommen', $D['R']['PageEdit']['SEO']['p1']['DE']);
-		$this->assertEmpty($D['R']['PageEdit']['Info']);
+		$D = $this->savePage(['Active' => 1, 'FromURL' => 'neu']);
 
-		// erneut speichern ohne Änderung: bleibt stehen
-		$D = $this->savePage(['Active' => 1]);
-		$this->assertSame('willkommen', $D['R']['PageEdit']['SEO']['p1']['DE']);
-		$this->assertSame([$this->id('willkommen')], $this->linkIds($this->db));
-	}
-
-	public function testChangedSeoUrlRenamesTheLink(): void {
-		$this->savePage(['Active' => 1, 'Title' => 'Alt', 'FromURL' => '']);
-
-		$D = $this->savePage(['Active' => 1, 'Title' => 'Alt', 'FromURL' => 'neu']);
-
-		$this->assertSame('neu', $D['R']['PageEdit']['SEO']['p1']['DE']);
+		$this->assertSame('neu', $this->seo($D));
+		$this->assertEmpty($D['R']['Info']);
 		$this->assertSame($this->id('neu'), $D['PAGE']['D']['p1']['LANGUAGE']['D']['DE']['LINK']);
 		$this->assertSame([$this->id('neu')], $this->linkIds($this->db));
 	}
 
+	public function testEmptySeoUrlMakesThePageTheStartPage(): void {
+		// Der Benutzer löscht die SEO-URL bewusst: leeres Feld wird gesendet, aus dem Titel entsteht nichts
+		$D = $this->savePage(['Active' => 1, 'Title' => 'Willkommen', 'FromURL' => '']);
+
+		$this->assertSame([$this->id('')], $this->linkIds($this->db));
+		$this->assertSame('', $this->seo($D)); // Link mit leerer URL, nicht "kein Link" (null)
+		$this->assertTrue($this->isHome($D));
+		$this->assertSame($this->id(''), $D['PAGE']['D']['p1']['LANGUAGE']['D']['DE']['LINK']);
+	}
+
+	public function testClearingAnExistingSeoUrlMakesItTheStartPage(): void {
+		$this->savePage(['Active' => 1, 'Title' => 'Start', 'FromURL' => 'start']);
+
+		$D = $this->savePage(['Active' => 1, 'FromURL' => '']);
+
+		$this->assertTrue($this->isHome($D));
+		$this->assertSame([$this->id('')], $this->linkIds($this->db));
+	}
+
+	public function testStartPageStaysStartPageWhenSavedAgain(): void {
+		$this->savePage(['Active' => 1, 'Title' => 'Start', 'FromURL' => '']);
+
+		$D = $this->savePage(['Active' => 1, 'Title' => 'Neuer Titel']); // Feld nicht gesendet: Titel ändert nichts
+
+		$this->assertTrue($this->isHome($D));
+		$this->assertSame([$this->id('')], $this->linkIds($this->db));
+	}
+
+	public function testEmptySeoUrlTakenByAnotherPageGetsSuffixLikeAnyOtherUrl(): void {
+		$this->C['Link']->createOne('', 'frontend__page', 'fremeo/page'); // die Startseite gibt es schon
+
+		$D = $this->savePage(['Active' => 1, 'Title' => 'Zweite', 'FromURL' => ''], ['Active' => 1], 'p2');
+
+		$this->assertSame('_1', $this->seo($D, 'p2'));
+		$this->assertNotEmpty($D['R']['Info']);
+		$this->assertEqualsCanonicalizing([$this->id(''), $this->id('_1')], $this->linkIds($this->db));
+	}
+
 	public function testDeletedLanguageRemovesTheLink(): void {
-		$this->savePage(['Active' => 1, 'Title' => 'Weg', 'FromURL' => '']);
+		$this->savePage(['Active' => 1, 'Title' => 'Weg', 'FromURL' => 'weg']);
 
 		$this->savePage(['Active' => -2]);
 
 		$this->assertSame([], $this->linkIds($this->db));
 	}
 
-	public function testBrokenLinkReferenceIsReplaced(): void {
+	public function testBrokenLinkReferenceIsReplacedWhenSeoUrlIsSent(): void {
 		// LANGUAGE.LINK zeigt auf einen nicht (mehr) vorhandenen Link
 		$d = ['PAGE' => ['D' => ['p1' => ['Active' => 1, 'LANGUAGE' => ['D' => ['DE' => ['Active' => 1, 'Title' => 'Defekt', 'LINK' => '00000000']]]]]]];
 		$this->db->set_object($d);
 
-		$D = $this->savePage(['Active' => 1, 'Title' => 'Defekt']);
+		$D = $this->savePage(['Active' => 1, 'Title' => 'Defekt', 'FromURL' => 'defekt']);
 
-		$this->assertSame('defekt', $D['R']['PageEdit']['SEO']['p1']['DE']);
+		$this->assertSame('defekt', $this->seo($D));
 		$this->assertSame($this->id('defekt'), $D['PAGE']['D']['p1']['LANGUAGE']['D']['DE']['LINK']);
 	}
 
 	public function testLinkTargetsTheFrontendPage(): void {
-		$this->savePage(['Active' => 1, 'Title' => 'Ziel', 'FromURL' => '']);
+		$this->savePage(['Active' => 1, 'Title' => 'Ziel', 'FromURL' => 'ziel']);
 
 		$d = $this->C['Link']->getBySeo('ziel')['LINK']['D'][$this->id('ziel')];
 		$this->assertSame('R[Page]=frontend__page&R[ModuleId]=fremeo/page&R[Id]=p1&R[LanguageId]=DE', $d['ToURL']);
